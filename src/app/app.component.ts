@@ -11,10 +11,11 @@ import { Globe } from './globe';
 
 export class AppComponent implements AfterViewInit {
   @ViewChild('container') containerRef :ElementRef; 
+  private gl:Globe;
   ngAfterViewInit(): void {
-      var gl:Globe = new Globe(this.containerRef.nativeElement,{imgDir:"/assets/globe/"});
+      this.gl = new Globe(this.containerRef.nativeElement,{imgDir:"/assets/globe/"});
 
-      
+      var globe = this.gl;
       var xhr;
 
       var parser = function processData(allText) {
@@ -38,7 +39,7 @@ export class AppComponent implements AfterViewInit {
                   }
               }
           }
-          gl.globe_internal.addData(data, {format: 'magnitude', name: 'test', animated: false});
+          globe.globe_internal.addData(data, {format: 'magnitude', name: 'test', animated: false});
       };
 
         var settime = function(globe) {
@@ -55,14 +56,22 @@ export class AppComponent implements AfterViewInit {
             var data = xhr.responseText;
             parser(data);
 
-            gl.globe_internal.createPoints();
-            gl.globe_internal.animate();
+            globe.globe_internal.createPoints();
+            globe.globe_internal.animate();
             document.body.style.backgroundImage = 'none'; // remove loading
           }
         }
       };
 
       xhr.send(null);
+  }
+
+  private zoomIn(){
+    this.gl.globe_internal.zoom(100);
+  }
+
+  private zoomOut(){
+    this.gl.globe_internal.zoom(-100);
   }
 
   private title = 'on-thin-ice';

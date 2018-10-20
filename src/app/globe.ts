@@ -73,6 +73,7 @@ export class Globe {
       var rotation = { x: 0, y: 0 },
         target = { x: Math.PI * 3 / 2, y: Math.PI / 6.0 },
         targetOnDown = { x: 0, y: 0 };
+      var pinchActionPositions = [{ x: 0, y: 0 }, { x: 0, y: 0 }]
 
       var distance = 100000, distanceTarget = 100000;
       var padding = 40;
@@ -131,23 +132,23 @@ export class Globe {
 
         geometry = new THREE.Geometry();
         geometry.vertices.push(
-          new THREE.Vector3(0,0,0)          
+          new THREE.Vector3(0, 0, 0)
         );
         let r = 2.0;
-        for (let i = Math.PI/6; i < Math.PI*2; i+=Math.PI/3){
-          let y = r*Math.cos(i);
-          let x = r*Math.sin(i);
+        for (let i = Math.PI / 6; i < Math.PI * 2; i += Math.PI / 3) {
+          let y = r * Math.cos(i);
+          let x = r * Math.sin(i);
           geometry.vertices.push(new THREE.Vector3(x, y, 0))
         }
-        geometry.faces.push( 
-          new THREE.Face3( 0, 1, 2 ),
-          new THREE.Face3( 0, 2, 3 ),
-          new THREE.Face3( 0, 3, 4 ),
-          new THREE.Face3( 2, 4, 5 ),
-          new THREE.Face3( 2, 5, 6 ),
-          new THREE.Face3( 2, 6, 1 ),
+        geometry.faces.push(
+          new THREE.Face3(0, 1, 2),
+          new THREE.Face3(0, 2, 3),
+          new THREE.Face3(0, 3, 4),
+          new THREE.Face3(2, 4, 5),
+          new THREE.Face3(2, 5, 6),
+          new THREE.Face3(2, 6, 1),
         );
-        
+
         geometry.applyMatrix(new THREE.Matrix4().makeTranslation(0, 0, -0.5));
 
         point = new THREE.Mesh(geometry);
@@ -294,20 +295,25 @@ export class Globe {
 
       function onTouchDown(event) {
         event.preventDefault();
-        if (event.targetTouches.length===1){
-          
+        if (event.touches.length === 1) {
+
 
           container.addEventListener('touchmove', onTouchMove, false);
           container.addEventListener('touchend', onMouseUp, false);
           container.addEventListener('touchcancel', onMouseUp, false);
-          let touchDetails = event.targetTouches[0];
+          let touchDetails = event.touches[0];
           mouseOnDown.x = - touchDetails.clientX;
           mouseOnDown.y = touchDetails.clientY;
-  
+
           targetOnDown.x = target.x;
           targetOnDown.y = target.y;
-  
+
           container.style.cursor = 'move';
+        } else if (event.touches.length === 2) {
+          pinchActionPositions[0].x = event.touches[0].clientX;
+          pinchActionPositions[0].y = event.touches[0].clientY;
+          pinchActionPositions[1].x = event.touches[1].clientX;
+          pinchActionPositions[1].y = event.touches[1].clientY;
         }
       }
 
@@ -329,17 +335,36 @@ export class Globe {
       }
 
       function onTouchMove(event) {
-        let touchDetails = event.targetTouches[0];
-        mouse.x = - touchDetails.clientX;
-        mouse.y = touchDetails.clientY;
+        if (event.touches.length === 1) {
+          let touchDetails = event.touches[0];
+          mouse.x = - touchDetails.clientX;
+          mouse.y = touchDetails.clientY;
 
-        var zoomDamp = distance / 1000;
+          var zoomDamp = distance / 1000;
 
-        target.x = targetOnDown.x + (mouse.x - mouseOnDown.x) * 0.005 * zoomDamp;
-        target.y = targetOnDown.y + (mouse.y - mouseOnDown.y) * 0.005 * zoomDamp;
+          target.x = targetOnDown.x + (mouse.x - mouseOnDown.x) * 0.005 * zoomDamp;
+          target.y = targetOnDown.y + (mouse.y - mouseOnDown.y) * 0.005 * zoomDamp;
 
-        target.y = target.y > PI_HALF ? PI_HALF : target.y;
-        target.y = target.y < - PI_HALF ? - PI_HALF : target.y;
+          target.y = target.y > PI_HALF ? PI_HALF : target.y;
+          target.y = target.y < - PI_HALF ? - PI_HALF : target.y;
+        } else if (event.touches.length === 2) {
+          var curDiff = Math.abs(event.touches[0].clientX - event.touches[1].clientX);
+          var prevDiff = Math.abs(pinchActionPositions[0].x - pinchActionPositions[1].x);
+          pinchActionPositions[0].x = event.touches[0].clientX;
+          pinchActionPositions[0].y = event.touches[0].clientY;
+          pinchActionPositions[1].x = event.touches[1].clientX;
+          pinchActionPositions[1].y = event.touches[1].clientY;
+          if (prevDiff > 0) {
+            if (curDiff > prevDiff) {
+              // The distance between the two pointers has increased
+              zoom(curDiff-prevDiff)
+            }
+            if (curDiff < prevDiff) {
+              // The distance between the two pointers has decreased
+              zoom(curDiff-prevDiff)
+            }
+          }
+        }
       }
 
       function onMouseMove(event) {
@@ -405,23 +430,23 @@ export class Globe {
 
       function render() {
         zoom(curZoomSpeed);
-        
-        raycaster.setFromCamera( mouse, camera );
-        if (points){
+
+        raycaster.setFromCamera(mouse, camera);
+        if (points) {
           var intersects, INTERSECTED;
           var attributes = points.geometry.attributes;
-          intersects = raycaster.intersectObject( points );
-          if ( intersects.length > 0 ) {
-            if ( INTERSECTED != intersects[ 0 ].faceIndex ) {
-              if (point.geometry.faces.length> intersects[ 0 ].faceIndex){
-                point.geometry.faces[intersects[ 0 ].faceIndex].color = new THREE.Color(0xff0000); 
-                INTERSECTED = intersects[ 0 ].faceIndex;
+          intersects = raycaster.intersectObject(points);
+          if (intersects.length > 0) {
+            if (INTERSECTED != intersects[0].faceIndex) {
+              if (point.geometry.faces.length > intersects[0].faceIndex) {
+                point.geometry.faces[intersects[0].faceIndex].color = new THREE.Color(0xff0000);
+                INTERSECTED = intersects[0].faceIndex;
               }
-              
+
             }
           }
         }
-        
+
 
         rotation.x += (target.x - rotation.x) * 0.1;
         rotation.y += (target.y - rotation.y) * 0.1;
@@ -467,7 +492,7 @@ export class Globe {
         this.points.morphTargetInfluences[index] = leftover;
         this._time = t;
       });
-
+      this.zoom = zoom;
       this.addData = addData;
       this.createPoints = createPoints;
       this.renderer = renderer;

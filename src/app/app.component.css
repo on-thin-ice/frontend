@@ -43,8 +43,20 @@ html {
   #title {
     color: #cccccc;
     position: absolute;
-    top: 50px;
+    top: 20px;
     left: 20px;
+    font-weight: lighter;
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 3px;
+    font-size:30pt;
+    padding: 10px;
+  }
+
+  #controls {
+    color: #cccccc;
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
     font-weight: lighter;
     background-color: rgba(0,0,0,0.2);
     border-radius: 3px;
