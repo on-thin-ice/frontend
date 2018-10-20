@@ -2,7 +2,7 @@ import { Component, ViewChild, AfterViewInit, ElementRef } from '@angular/core';
 import { TWEEN } from '@tweenjs/tween.js'
 import * as THREE from 'three';
 import { Globe } from './globe';
-import * as data from './globe_7.json';
+import * as data from './globe_7_0.64.json';
 
 @Component({
   selector: 'app-root',
@@ -53,6 +53,7 @@ export class AppComponent implements AfterViewInit {
     };
 
     globe.globe_internal.createPoints();
+    //globe.globe_internal.addPolys(data.default);
             globe.globe_internal.animate();
             document.body.style.backgroundImage = 'none'; // remove loading
 

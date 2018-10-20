@@ -60,7 +60,7 @@ export class Globe {
         }
       };
 
-      var camera, scene, renderer, w, h;
+      var camera, scene, renderer, w, h, light;
       var mesh, atmosphere, point;
       var points;
 
@@ -91,7 +91,10 @@ export class Globe {
         camera = new THREE.PerspectiveCamera(30, w / h, 1, 10000);
         camera.position.z = distance;
 
+
         scene = new THREE.Scene();
+        light = new THREE.DirectionalLight( 0xffffff );
+				scene.add( light );
 
         var geometry: any = new THREE.SphereGeometry(200, 40, 30);
 
@@ -240,7 +243,40 @@ export class Globe {
       };
 
       function addPolys(data, opts){
+        let scale = 450.0;
+        let geometry = new THREE.Geometry();
+        data.vertices.forEach(element => {
+          geometry.vertices.push(
+            new THREE.Vector3(scale*element.x, scale*element.y, scale*element.z)
+          );
+        });
 
+        data.tiles.forEach(element=>{
+          var insertIdx = geometry.vertices.length;
+          var xavg = element.map(idx => data.vertices[idx].x).reduce((a,b)=>a+b)/element.length;
+          var yavg = element.map(idx => data.vertices[idx].y).reduce((a,b)=>a+b)/element.length;
+          var zavg = element.map(idx => data.vertices[idx].z).reduce((a,b)=>a+b)/element.length;
+          geometry.vertices.push(
+            new THREE.Vector3(scale*xavg, scale*yavg, scale*zavg)
+          );
+          for(var idx = 0; idx < element.length; idx++){
+            var face = new THREE.Face3(insertIdx, element[idx], element[(idx+1)%element.length]);
+            face.color = new THREE.Color(0xff0000);
+            geometry.faces.push(face);
+          }
+        });
+        var material = new THREE.MeshPhongMaterial( {
+					color: 0xffffff,
+					flatShading: true,
+					vertexColors: THREE.VertexColors,
+					shininess: 0
+				} );
+        var wireframeMaterial = new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true, transparent: true } );
+        let geom = new THREE.IcosahedronBufferGeometry(225,5);
+        let mesh = new THREE.Mesh(geom,material);
+        let wireframe = new THREE.Mesh( geom, wireframeMaterial );
+        mesh.add(wireframe);
+        scene.add(mesh);
       }
 
       function createPoints() {
@@ -423,7 +459,7 @@ export class Globe {
 
       function zoom(delta) {
         distanceTarget -= delta;
-        distanceTarget = distanceTarget > 1000 ? 1000 : distanceTarget;
+        distanceTarget = distanceTarget > 2000 ? 2000 : distanceTarget;
         distanceTarget = distanceTarget < 220 ? 220 : distanceTarget;
       }
 
@@ -459,7 +495,6 @@ export class Globe {
         camera.position.x = distance * Math.sin(rotation.x) * Math.cos(rotation.y);
         camera.position.y = distance * Math.sin(rotation.y);
         camera.position.z = distance * Math.cos(rotation.x) * Math.cos(rotation.y);
-
         camera.lookAt(mesh.position);
 
         renderer.render(scene, camera);
