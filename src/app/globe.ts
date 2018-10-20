@@ -272,10 +272,10 @@ export class Globe {
 					shininess: 0
 				} );
         var wireframeMaterial = new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true, transparent: true } );
-        let geom = new THREE.IcosahedronBufferGeometry(225,5);
-        let mesh = new THREE.Mesh(geom,material);
-        let wireframe = new THREE.Mesh( geom, wireframeMaterial );
-        mesh.add(wireframe);
+        //let geom = new THREE.IcosahedronBufferGeometry(225,5);
+        let mesh = new THREE.Mesh(geometry,material);
+        // let wireframe = new THREE.Mesh( geometry, wireframeMaterial );
+        // mesh.add(wireframe);
         scene.add(mesh);
       }
 
