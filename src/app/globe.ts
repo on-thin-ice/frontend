@@ -161,13 +161,23 @@ export class Globe {
 
         container.addEventListener('mousedown', onMouseDown, false);
 
-        container.addEventListener('mousewheel', onMouseWheel, false);
+        container.addEventListener('touchstart', onTouchDown, false);
+
+        container.addEventListener('wheel', onMouseWheel, false);
 
         document.addEventListener('keydown', onDocumentKeyDown, false);
 
         window.addEventListener('resize', onWindowResize, false);
 
         container.addEventListener('mouseover', function () {
+          overRenderer = true;
+        }, false);
+
+        container.addEventListener('touchend', function () {
+          overRenderer = true;
+        }, false);
+
+        container.addEventListener('touchcancel', function () {
           overRenderer = true;
         }, false);
 
@@ -282,12 +292,32 @@ export class Globe {
         subgeo.merge(point.geometry, point.matrix);
       }
 
+      function onTouchDown(event) {
+        event.preventDefault();
+        if (event.targetTouches.length===1){
+          
+
+          container.addEventListener('touchmove', onTouchMove, false);
+          container.addEventListener('touchend', onMouseUp, false);
+          container.addEventListener('touchcancel', onMouseUp, false);
+          let touchDetails = event.targetTouches[0];
+          mouseOnDown.x = - touchDetails.clientX;
+          mouseOnDown.y = touchDetails.clientY;
+  
+          targetOnDown.x = target.x;
+          targetOnDown.y = target.y;
+  
+          container.style.cursor = 'move';
+        }
+      }
+
+
       function onMouseDown(event) {
         event.preventDefault();
 
         container.addEventListener('mousemove', onMouseMove, false);
         container.addEventListener('mouseup', onMouseUp, false);
-        container.addEventListener('mouseout', onMouseOut, false);
+        container.addEventListener('mouseout', onMouseUp, false);
 
         mouseOnDown.x = - event.clientX;
         mouseOnDown.y = event.clientY;
@@ -296,6 +326,20 @@ export class Globe {
         targetOnDown.y = target.y;
 
         container.style.cursor = 'move';
+      }
+
+      function onTouchMove(event) {
+        let touchDetails = event.targetTouches[0];
+        mouse.x = - touchDetails.clientX;
+        mouse.y = touchDetails.clientY;
+
+        var zoomDamp = distance / 1000;
+
+        target.x = targetOnDown.x + (mouse.x - mouseOnDown.x) * 0.005 * zoomDamp;
+        target.y = targetOnDown.y + (mouse.y - mouseOnDown.y) * 0.005 * zoomDamp;
+
+        target.y = target.y > PI_HALF ? PI_HALF : target.y;
+        target.y = target.y < - PI_HALF ? - PI_HALF : target.y;
       }
 
       function onMouseMove(event) {
@@ -314,14 +358,11 @@ export class Globe {
       function onMouseUp(event) {
         container.removeEventListener('mousemove', onMouseMove, false);
         container.removeEventListener('mouseup', onMouseUp, false);
-        container.removeEventListener('mouseout', onMouseOut, false);
+        container.removeEventListener('mouseout', onMouseUp, false);
+        container.removeEventListener('touchmove', onTouchMove, false);
+        container.removeEventListener('touchend', onMouseUp, false);
+        container.removeEventListener('touchcancel', onMouseUp, false);
         container.style.cursor = 'auto';
-      }
-
-      function onMouseOut(event) {
-        container.removeEventListener('mousemove', onMouseMove, false);
-        container.removeEventListener('mouseup', onMouseUp, false);
-        container.removeEventListener('mouseout', onMouseOut, false);
       }
 
       function onMouseWheel(event) {
@@ -346,9 +387,9 @@ export class Globe {
       }
 
       function onWindowResize(event) {
-        camera.aspect = container.offsetWidth / container.offsetHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(container.offsetWidth, container.offsetHeight);
+        //camera.aspect = container.offsetWidth / container.offsetHeight;
+        //camera.updateProjectionMatrix();
+        //renderer.setSize(container.offsetWidth, container.offsetHeight);
       }
 
       function zoom(delta) {
