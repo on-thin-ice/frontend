@@ -243,33 +243,43 @@ export class Globe {
       };
 
       function addPolys(data, opts){
-        let scale = 450.0;
+        let scale = 210.0;
         let geometry = new THREE.Geometry();
         data.vertices.forEach(element => {
+          var targetScale = 1.0/Math.sqrt(element.x*element.x+element.y*element.y+element.z*element.z);
+          var specificscale = scale * targetScale
           geometry.vertices.push(
-            new THREE.Vector3(scale*element.x, scale*element.y, scale*element.z)
+            
+            new THREE.Vector3(specificscale*element.x, specificscale*element.y, specificscale*element.z)
           );
         });
-
+        var tile = 0;
         data.tiles.forEach(element=>{
           var insertIdx = geometry.vertices.length;
           var xavg = element.map(idx => data.vertices[idx].x).reduce((a,b)=>a+b)/element.length;
           var yavg = element.map(idx => data.vertices[idx].y).reduce((a,b)=>a+b)/element.length;
           var zavg = element.map(idx => data.vertices[idx].z).reduce((a,b)=>a+b)/element.length;
+          var targetScale = 1.0/Math.sqrt(xavg*xavg+yavg*yavg+zavg*zavg);
+          var specificscale = scale * targetScale
           geometry.vertices.push(
-            new THREE.Vector3(scale*xavg, scale*yavg, scale*zavg)
+            new THREE.Vector3(specificscale*xavg, specificscale*yavg, specificscale*zavg)
           );
           for(var idx = 0; idx < element.length; idx++){
             var face = new THREE.Face3(insertIdx, element[idx], element[(idx+1)%element.length]);
-            face.color = new THREE.Color(0xff0000);
+            var c = new THREE.Color();
+            c.setHSL((0.6 - (tile * 0.01%0.2)), 1.0, 0.5);
+            face.color = c;//new THREE.Color(0xff0000);
             geometry.faces.push(face);
           }
+          tile++;
         });
         var material = new THREE.MeshPhongMaterial( {
 					color: 0xffffff,
 					flatShading: true,
 					vertexColors: THREE.VertexColors,
-					shininess: 0
+          shininess: 0,
+          opacity: 0.5,
+          transparent: true
 				} );
         var wireframeMaterial = new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true, transparent: true } );
         //let geom = new THREE.IcosahedronBufferGeometry(225,5);
@@ -388,8 +398,8 @@ export class Globe {
           target.y = target.y > PI_HALF ? PI_HALF : target.y;
           target.y = target.y < - PI_HALF ? - PI_HALF : target.y;
         } else if (event.touches.length === 2) {
-          var curDiff = Math.abs(event.touches[0].clientX - event.touches[1].clientX);
-          var prevDiff = Math.abs(pinchActionPositions[0].x - pinchActionPositions[1].x);
+          var curDiff = Math.abs(event.touches[0].clientY - event.touches[1].clientY);
+          var prevDiff = Math.abs(pinchActionPositions[0].y - pinchActionPositions[1].y);
           pinchActionPositions[0].x = event.touches[0].clientX;
           pinchActionPositions[0].y = event.touches[0].clientY;
           pinchActionPositions[1].x = event.touches[1].clientX;
