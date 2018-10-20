@@ -2,6 +2,7 @@ import { Component, ViewChild, AfterViewInit, ElementRef } from '@angular/core';
 import { TWEEN } from '@tweenjs/tween.js'
 import * as THREE from 'three';
 import { Globe } from './globe';
+import * as data from './globe_7.json';
 
 @Component({
   selector: 'app-root',
@@ -17,53 +18,45 @@ export class AppComponent implements AfterViewInit {
 
       var globe = this.gl;
       var xhr;
-
-      var parser = function processData(allText) {
-
-          var allTextLines = allText.split(/\r\n|\n/).filter(function(s){
-              if (s) {
-                  return s.charAt(0) != '#';
-              }
-              return false;
-          });
-          var data = [];
-          var index = 0;
-          for (var i = 0; i < 512; i++){
-              var lineValues = allTextLines[i].split(/[ ,]+/).filter(function(s){return s!=""});
-
-              for (var j = 0; j < 1024; j++){
-                  if (i%4==0&&j%4==0) {
-                      data[index++] = -90.0+0.3515625 * i;
-                      data[index++] = 0.3515625 * j;
-                      data[index++] = lineValues[j]*0.01;
-                  }
-              }
-          }
-          globe.globe_internal.addData(data, {format: 'magnitude', name: 'test', animated: false});
-      };
-
-        var settime = function(globe) {
-            return function() {
-                new TWEEN.Tween(globe).to({time: 0},500).easing(TWEEN.Easing.Cubic.EaseOut).start();
-            };
-        };
       
-      xhr = new XMLHttpRequest();
-      xhr.open('GET', 'https://services.swpc.noaa.gov/text/aurora-nowcast-map.txt', true);
-      xhr.onreadystatechange = function(e) {
-        if (xhr.readyState === 4) {
-          if (xhr.status === 200) {
-            var data = xhr.responseText;
-            parser(data);
+      var dataOut = [];
+      var index = 0;
+      var verts = (<any>data).vertices;
+      for(let i = 0; i < verts.length; i++){
+          let x = verts[i].x;
+          let y = verts[i].y;
+          let z = verts[i].z;
+          let r = Math.sqrt(x*x+y*y+z*z)
+          let lat = Math.asin(verts[i].z/r);
+          //let long = Math.atan2(verts[i].y,verts[i].x);
+          let long;
+          if (x > 0) {
+                long = Math.atan(y/x)*(180/Math.PI)
+            } else if (y > 0) {
+                long = Math.atan(y/x)*(180/Math.PI) + 180
+            } else {
+                long =  Math.atan(y/x)*(180/Math.PI) - 180
+            }
+          
+          
+          dataOut[index++] = 180*lat/Math.PI;
+          dataOut[index++] = long;
+          dataOut[index++] = 0.1;
+      }
+      globe.globe_internal.addData(dataOut, {format: 'magnitude', name: 'test', animated: false});
 
-            globe.globe_internal.createPoints();
+
+      var settime = function(globe) {
+        return function() {
+            new TWEEN.Tween(globe).to({time: 0},500).easing(TWEEN.Easing.Cubic.EaseOut).start();
+        };
+    };
+
+    globe.globe_internal.createPoints();
             globe.globe_internal.animate();
             document.body.style.backgroundImage = 'none'; // remove loading
-          }
-        }
-      };
 
-      xhr.send(null);
+      
   }
 
   private zoomIn(){

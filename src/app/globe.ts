@@ -134,7 +134,7 @@ export class Globe {
         geometry.vertices.push(
           new THREE.Vector3(0, 0, 0)
         );
-        let r = 2.0;
+        let r = 0.5;
         for (let i = Math.PI / 6; i < Math.PI * 2; i += Math.PI / 3) {
           let y = r * Math.cos(i);
           let x = r * Math.sin(i);
@@ -238,6 +238,10 @@ export class Globe {
         }
 
       };
+
+      function addPolys(data, opts){
+
+      }
 
       function createPoints() {
         if (this._baseGeometry !== undefined) {
@@ -494,6 +498,7 @@ export class Globe {
       });
       this.zoom = zoom;
       this.addData = addData;
+      this.addPolys = addPolys;
       this.createPoints = createPoints;
       this.renderer = renderer;
       this.scene = scene;
