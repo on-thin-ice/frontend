@@ -335,7 +335,7 @@ export class Globe {
           let vec = tilegeometry.vertices[element.tileId];
           let box = new THREE.BoxGeometry(10,10,10);
           let mesh = new THREE.Mesh(box);
-          mesh.position = vec;
+          mesh.position.set(vec.x,vec.y,vec.z);
           scene.add(mesh);
         });
         
