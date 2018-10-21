@@ -61,7 +61,7 @@ export class Globe {
       };
 
       var camera, scene, renderer, w, h, light;
-      var mesh, atmosphere, point;
+      var mesh, atmosphere, point, tilemesh, tilegeometry;
       var points;
 
       var overRenderer;
@@ -247,7 +247,7 @@ export class Globe {
 
       function addPolys(data, opts){
         let scale = 210.0;
-        let heightRenderingScale = 0.03;
+        let heightRenderingScale = 0.01;
         let geometry = new THREE.Geometry();
         data.vertices.forEach(element => {
           var targetScale = 1.0/Math.sqrt(element.x*element.x+element.y*element.y+element.z*element.z);
@@ -269,13 +269,17 @@ export class Globe {
           geometry.vertices.push(
             new THREE.Vector3(specificscale*xavg, specificscale*yavg, specificscale*zavg)
           );
-          for(var idx = 0; idx < element.length; idx++){
-            var face = new THREE.Face3(insertIdx, element[idx], element[(idx+1)%element.length]);
-            var c = new THREE.Color();
-            c.setHSL((0.6 - (havg*0.1)), 1.0, 0.5);
-            face.color = c;//new THREE.Color(0xff0000);
-            geometry.faces.push(face);
+          var limit = 0.5;
+          if (yavg<-limit||yavg>limit){
+            for(var idx = 0; idx < element.length; idx++){
+              var face = new THREE.Face3(insertIdx, element[idx], element[(idx+1)%element.length]);
+              var c = new THREE.Color();
+              c.setHSL((0.6 - (tile)*0.1%0.2), 1.0, 0.5);
+              face.color = c;//new THREE.Color(0xff0000);
+              geometry.faces.push(face);
+            }
           }
+          
           tile++;
         });
         var material = new THREE.MeshPhongMaterial( {
@@ -284,11 +288,13 @@ export class Globe {
 					vertexColors: THREE.VertexColors,
           shininess: 0,
           opacity: 0.5,
-          transparent: true
+          //transparent: true
 				} );
         var wireframeMaterial = new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true, transparent: true } );
         //let geom = new THREE.IcosahedronBufferGeometry(225,5);
         let mesh = new THREE.Mesh(geometry,material);
+        tilemesh = mesh;
+        tilegeometry = geometry;
         // let wireframe = new THREE.Mesh( geometry, wireframeMaterial );
         // mesh.add(wireframe);
         scene.add(mesh);
@@ -387,6 +393,21 @@ export class Globe {
         targetOnDown.y = target.y;
 
         container.style.cursor = 'move';
+
+        var vector = new THREE.Vector3( event.clientX, event.clientY, 1 );
+        var ray = new THREE.Raycaster( );
+        ray.setFromCamera( mouse, camera );
+        var intersects = ray.intersectObject(tilemesh);
+          
+          if (intersects.length > 0) {
+            if(event.ctrlKey){
+              console.log("Clicked");
+              intersects[0].face.color = new THREE.Color(0xff0000);
+              tilegeometry.colorsNeedUpdate = true;
+            }
+            
+          }
+
       }
 
       function onTouchMove(event) {
@@ -470,6 +491,13 @@ export class Globe {
         //camera.aspect = container.offsetWidth / container.offsetHeight;
         //camera.updateProjectionMatrix();
         //renderer.setSize(container.offsetWidth, container.offsetHeight);
+        var aspect = window.innerWidth / window.innerHeight;
+
+        camera.aspect = aspect;
+        camera.updateProjectionMatrix();
+
+        renderer.setSize( window.innerWidth, window.innerHeight );
+
       }
 
       function zoom(delta) {
@@ -485,23 +513,7 @@ export class Globe {
 
       function render() {
         zoom(curZoomSpeed);
-
-        raycaster.setFromCamera(mouse, camera);
-        if (points) {
-          var intersects, INTERSECTED;
-          var attributes = points.geometry.attributes;
-          intersects = raycaster.intersectObject(points);
-          if (intersects.length > 0) {
-            if (INTERSECTED != intersects[0].faceIndex) {
-              if (point.geometry.faces.length > intersects[0].faceIndex) {
-                point.geometry.faces[intersects[0].faceIndex].color = new THREE.Color(0xff0000);
-                INTERSECTED = intersects[0].faceIndex;
-              }
-
-            }
-          }
-        }
-
+        
 
         rotation.x += (target.x - rotation.x) * 0.1;
         rotation.y += (target.y - rotation.y) * 0.1;
