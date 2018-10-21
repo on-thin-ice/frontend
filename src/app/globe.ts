@@ -94,6 +94,9 @@ export class Globe {
 
         scene = new THREE.Scene();
         light = new THREE.DirectionalLight( 0xffffff );
+        scene.add( light );
+        light = new THREE.DirectionalLight( 0xffffff );
+        light.position.y = -1000;
 				scene.add( light );
 
         var geometry: any = new THREE.SphereGeometry(200, 40, 30);
@@ -101,7 +104,7 @@ export class Globe {
         shader = Shaders['earth'];
         uniforms = THREE.UniformsUtils.clone(shader.uniforms);
 
-        uniforms['texture'].value = THREE.ImageUtils.loadTexture(imgDir + 'world.jpg');
+        uniforms['texture'].value = THREE.ImageUtils.loadTexture(imgDir + 'earth.png');
 
         material = new THREE.ShaderMaterial({
 
@@ -244,10 +247,11 @@ export class Globe {
 
       function addPolys(data, opts){
         let scale = 210.0;
+        let heightRenderingScale = 0.03;
         let geometry = new THREE.Geometry();
         data.vertices.forEach(element => {
           var targetScale = 1.0/Math.sqrt(element.x*element.x+element.y*element.y+element.z*element.z);
-          var specificscale = scale * targetScale
+          var specificscale = scale * targetScale*(1-(element.h*heightRenderingScale));
           geometry.vertices.push(
             
             new THREE.Vector3(specificscale*element.x, specificscale*element.y, specificscale*element.z)
@@ -259,15 +263,16 @@ export class Globe {
           var xavg = element.map(idx => data.vertices[idx].x).reduce((a,b)=>a+b)/element.length;
           var yavg = element.map(idx => data.vertices[idx].y).reduce((a,b)=>a+b)/element.length;
           var zavg = element.map(idx => data.vertices[idx].z).reduce((a,b)=>a+b)/element.length;
+          var havg = element.map(idx => data.vertices[idx].h).reduce((a,b)=>a+b)/element.length;
           var targetScale = 1.0/Math.sqrt(xavg*xavg+yavg*yavg+zavg*zavg);
-          var specificscale = scale * targetScale
+          var specificscale = scale * targetScale*(1-(havg*heightRenderingScale));
           geometry.vertices.push(
             new THREE.Vector3(specificscale*xavg, specificscale*yavg, specificscale*zavg)
           );
           for(var idx = 0; idx < element.length; idx++){
             var face = new THREE.Face3(insertIdx, element[idx], element[(idx+1)%element.length]);
             var c = new THREE.Color();
-            c.setHSL((0.6 - (tile * 0.01%0.2)), 1.0, 0.5);
+            c.setHSL((0.6 - (havg*0.1)), 1.0, 0.5);
             face.color = c;//new THREE.Color(0xff0000);
             geometry.faces.push(face);
           }
