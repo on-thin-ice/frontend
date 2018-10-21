@@ -13,11 +13,11 @@
 
 <div id="plan">
   <h3>Plan your expedition</h3>
-  <form>
+  <form action="http://on-thin-ice-api.westeurope.cloudapp.azure.com/api/plan" method="POST" enctype="application/x-www-form-urlencoded">
       <br>Name your expedition<br>
-      <textarea rows="1" id="title" size="2" style="font-size:15px;"></textarea>
+      <textarea rows="1" id="title" name="title" size="2" style="font-size:15px;"></textarea>
       <br>Number of explorers<br>
-      <select id="numberOfPeople">
+      <select id="numberOfPeople" name="numberOfPeople">
           <option>1</option>
           <option>2</option>
           <option>3</option>
@@ -28,8 +28,9 @@
           <option>8</option>
           <option>9</option>
         </select>
+      <p>test</p>
       <br>Mass of equipment<br>
-      <select id="massOfSupplies">
+      <select id="massOfEquipment" name="massOfEquipment">
           <option value="100">100kg</option>
           <option value="200">200kg</option>
           <option value="300">300kg</option>
@@ -51,7 +52,7 @@
           <option value="10000">10000kg</option>
         </select>
         <br>Food<br>
-        <select id="massOfFood" >
+        <select id="massOfFood" name="massOfFood">
             <option value="100">100kg</option>
             <option value="200">200kg</option>
             <option value="300">300kg</option>
@@ -72,7 +73,9 @@
             <option value="9000">9000kg</option>
             <option value="10000">10000kg</option>
           </select>
-        <input type="hidden" id="waypoints">
+        <input type="text" id="waypoints" name="waypoints" val="1,2,3,4">
+        <br>
+        <input type="submit" value="Depart for the ice!">
   </form>
 </div>
 
