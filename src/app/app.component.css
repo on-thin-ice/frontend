@@ -64,6 +64,18 @@ html {
     padding: 10px;
   }
 
+  #plan {
+    color: #cccccc;
+    position: absolute;
+    top: 100px;
+    left: 0px;
+    font-weight: lighter;
+    background-color: rgba(0,0,0,0.2);
+    border-radius: 3px;
+    font-size:10pt;
+    padding: 10px;
+  }
+
   .year {
     font: 16px Georgia;
     line-height: 26px;
