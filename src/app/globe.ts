@@ -288,7 +288,8 @@ export class Globe {
 					vertexColors: THREE.VertexColors,
           shininess: 0,
           opacity: 0.5,
-          //transparent: true
+          transparent: true,
+          side: THREE.DoubleSide
 				} );
         var wireframeMaterial = new THREE.MeshBasicMaterial( { color: 0x000000, wireframe: true, transparent: true } );
         //let geom = new THREE.IcosahedronBufferGeometry(225,5);
@@ -327,6 +328,17 @@ export class Globe {
           points = this.points;
           scene.add(this.points);
         }
+      }
+
+      function addExpedition(data){
+        data.forEach(element => {
+          let vec = tilegeometry.vertices[element.tileId];
+          let box = new THREE.BoxGeometry(10,10,10);
+          let mesh = new THREE.Mesh(box);
+          mesh.position = vec;
+          scene.add(mesh);
+        });
+        
       }
 
       function addPoint(lat, lng, size, color, subgeo) {
@@ -394,19 +406,6 @@ export class Globe {
 
         container.style.cursor = 'move';
 
-        var vector = new THREE.Vector3( event.clientX, event.clientY, 1 );
-        var ray = new THREE.Raycaster( );
-        ray.setFromCamera( mouse, camera );
-        var intersects = ray.intersectObject(tilemesh);
-          
-          if (intersects.length > 0) {
-            if(event.ctrlKey){
-              console.log("Clicked");
-              intersects[0].face.color = new THREE.Color(0xff0000);
-              tilegeometry.colorsNeedUpdate = true;
-            }
-            
-          }
 
       }
 
@@ -513,7 +512,20 @@ export class Globe {
 
       function render() {
         zoom(curZoomSpeed);
-        
+        let ray = new THREE.Raycaster( );
+        var mx = (mouse.x/ window.innerWidth ) * 2 - 1;
+        var my = (mouse.y/ window.innerHeight  ) * 2 - 1;
+        ray.setFromCamera( {x:mx,y:my}, camera );
+        var intersects = ray.intersectObject(tilemesh);
+          
+          if (intersects.length > 0) {
+
+              console.log("Clicked");
+              intersects[0].face.color = new THREE.Color(0xff0000);
+              tilegeometry.colorsNeedUpdate = true;
+
+            
+          }
 
         rotation.x += (target.x - rotation.x) * 0.1;
         rotation.y += (target.y - rotation.y) * 0.1;
@@ -564,6 +576,7 @@ export class Globe {
       this.createPoints = createPoints;
       this.renderer = renderer;
       this.scene = scene;
+      this.addExpedition = addExpedition;
 
       return this;
 

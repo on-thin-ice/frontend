@@ -3,6 +3,8 @@ import { TWEEN } from '@tweenjs/tween.js'
 import * as THREE from 'three';
 import { Globe } from './globe';
 import * as data from './globe_7_0.64.json';
+import { HttpClientModule }    from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 
 @Component({
   selector: 'app-root',
@@ -13,6 +15,11 @@ import * as data from './globe_7_0.64.json';
 export class AppComponent implements AfterViewInit {
   @ViewChild('container') containerRef :ElementRef; 
   private gl:Globe;
+
+
+  public constructor(private http: HttpClient){
+
+  }
   ngAfterViewInit(): void {
       this.gl = new Globe(this.containerRef.nativeElement,{imgDir:"/assets/globe/"});
 
@@ -56,6 +63,9 @@ export class AppComponent implements AfterViewInit {
     globe.globe_internal.addPolys(data.default);
             globe.globe_internal.animate();
             document.body.style.backgroundImage = 'none'; // remove loading
+    this.http.get<any>("http://on-thin-ice-api.westeurope.cloudapp.azure.com/api/expeditions").forEach(res=>{
+        globe.globe_internal.addExpedition(res) ;
+    });
 
       
   }
