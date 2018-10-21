@@ -247,7 +247,7 @@ export class Globe {
 
       function addPolys(data, opts){
         let scale = 210.0;
-        let heightRenderingScale = 0.01;
+        let heightRenderingScale = 0.03;
         let geometry = new THREE.Geometry();
         data.vertices.forEach(element => {
           var targetScale = 1.0/Math.sqrt(element.x*element.x+element.y*element.y+element.z*element.z);
