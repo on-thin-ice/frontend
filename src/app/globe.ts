@@ -332,7 +332,7 @@ export class Globe {
 
       function addExpedition(data){
         data.forEach(element => {
-          let vec = tilegeometry.vertices[element.tileId];
+          let vec = tilegeometry.vertices[tilegeometry.faces[element.tileId%tilegeometry.faces.length].a];
           let box = new THREE.BoxGeometry(10,10,10);
           let mesh = new THREE.Mesh(box);
           mesh.position.set(vec.x,vec.y,vec.z);
