@@ -390,6 +390,21 @@ export class Globe {
           targetOnDown.y = target.y;
 
           container.style.cursor = 'move';
+          let ray = new THREE.Raycaster( );
+          var mx = (-mouseOnDown.x/ window.innerWidth ) * 2 - 1;
+          var my = (mouseOnDown.y/ window.innerHeight  ) * 2 - 1;
+          ray.setFromCamera( {x:mx,y:-my}, camera );
+          var intersects = ray.intersectObject(tilemesh);
+            
+            if (intersects.length > 0) {
+  
+                console.log("Clicked");
+                intersects[0].face.color.setRGB( 1, 0, 0 );
+                tilegeometry.colorsNeedUpdate = true;
+  
+              
+            }
+  
         } else if (event.touches.length === 2) {
           pinchActionPositions[0].x = event.touches[0].clientX;
           pinchActionPositions[0].y = event.touches[0].clientY;
