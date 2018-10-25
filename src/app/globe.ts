@@ -61,7 +61,7 @@ export class Globe {
       };
 
       var camera, scene, renderer, w, h, light;
-      var mesh, atmosphere, point, tilemesh, tilegeometry;
+      var mesh, atmosphere, point, tilemesh, tilegeometry, wireFrameMesh;
       var points;
 
       var overRenderer;
@@ -97,7 +97,8 @@ export class Globe {
         scene.add( light );
         light = new THREE.DirectionalLight( 0xffffff );
         light.position.y = -1000;
-				scene.add( light );
+        scene.add( light );
+        
 
         var geometry: any = new THREE.SphereGeometry(200, 40, 30);
 
@@ -106,6 +107,11 @@ export class Globe {
 
         uniforms['texture'].value = THREE.ImageUtils.loadTexture(imgDir + 'earth.png');
 
+        // var wireframeMaterial = new THREE.MeshBasicMaterial( { color: 0xffffff, wireframe: true, transparent: false } );
+        // wireFrameMesh = new THREE.Mesh(new THREE.IcosahedronBufferGeometry(300,6),wireframeMaterial);
+        // scene.add(wireFrameMesh);
+         
+
         material = new THREE.ShaderMaterial({
 
           uniforms: uniforms,
@@ -113,7 +119,8 @@ export class Globe {
           fragmentShader: shader.fragmentShader
 
         });
-
+        
+        
         mesh = new THREE.Mesh(geometry, material);
         mesh.rotation.y = Math.PI;
         scene.add(mesh);
@@ -131,6 +138,7 @@ export class Globe {
           transparent: true
 
         });
+        
 
         mesh = new THREE.Mesh(geometry, material);
         mesh.scale.set(1.1, 1.1, 1.1);
@@ -285,7 +293,7 @@ export class Globe {
         var material = new THREE.MeshPhongMaterial( {
 					color: 0xffffff,
 					flatShading: true,
-					vertexColors: THREE.VertexColors,
+					vertexColors: THREE.FaceColors,
           shininess: 0,
           opacity: 0.5,
           transparent: true,
@@ -405,7 +413,20 @@ export class Globe {
         targetOnDown.y = target.y;
 
         container.style.cursor = 'move';
+        let ray = new THREE.Raycaster( );
+        var mx = (-mouseOnDown.x/ window.innerWidth ) * 2 - 1;
+        var my = (mouseOnDown.y/ window.innerHeight  ) * 2 - 1;
+        ray.setFromCamera( {x:mx,y:-my}, camera );
+        var intersects = ray.intersectObject(tilemesh);
+          
+          if (intersects.length > 0) {
 
+              console.log("Clicked");
+              intersects[0].face.color.setRGB( 1, 0, 0 );
+              tilegeometry.colorsNeedUpdate = true;
+
+            
+          }
 
       }
 
@@ -512,20 +533,7 @@ export class Globe {
 
       function render() {
         zoom(curZoomSpeed);
-        let ray = new THREE.Raycaster( );
-        var mx = (mouse.x/ window.innerWidth ) * 2 - 1;
-        var my = (mouse.y/ window.innerHeight  ) * 2 - 1;
-        ray.setFromCamera( {x:mx,y:my}, camera );
-        var intersects = ray.intersectObject(tilemesh);
-          
-          if (intersects.length > 0) {
-
-              console.log("Clicked");
-              intersects[0].face.color = new THREE.Color(0xff0000);
-              tilegeometry.colorsNeedUpdate = true;
-
-            
-          }
+        
 
         rotation.x += (target.x - rotation.x) * 0.1;
         rotation.y += (target.y - rotation.y) * 0.1;
