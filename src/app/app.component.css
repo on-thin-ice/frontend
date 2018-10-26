@@ -93,17 +93,3 @@ html {
     font-size: 23px;
     color: #fff;
   }
-
-  #ce span {
-    display: none;
-  }
-
-  #ce {
-    width: 107px;
-    height: 55px;
-    display: block;
-    position: absolute;
-    bottom: 15px;
-    left: 20px;
-    background: url(../assets/globe/ce.png);
-  }

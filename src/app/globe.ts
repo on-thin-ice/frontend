@@ -478,7 +478,7 @@ export class Globe {
           ray.setFromCamera( {x:mx,y:-my}, camera );
           
           var intersects = ray.intersectObjects(scene.children);
-          if (intersects[0].object==tilemesh){
+          if (intersects.length > 0 && intersects[0].object==tilemesh){
             ray.intersectObject(tilemesh);
             if (intersects.length > 0) {
                 var idx = intersects[0].faceIndex;
