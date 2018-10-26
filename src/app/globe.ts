@@ -462,7 +462,7 @@ export class Globe {
       }
 
       function onMouseUp(event) {
-        if (event.touches.length === 1) {
+        if (event.touches && event.touches.length === 1) {
           let touchDetails = event.touches[0];
           mouse.x = - touchDetails.clientX;
           mouse.y = touchDetails.clientY;
