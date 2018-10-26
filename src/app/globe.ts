@@ -462,8 +462,15 @@ export class Globe {
       }
 
       function onMouseUp(event) {
-        mouse.x = - event.clientX;
-        mouse.y = event.clientY;
+        if (event.touches.length === 1) {
+          let touchDetails = event.touches[0];
+          mouse.x = - touchDetails.clientX;
+          mouse.y = touchDetails.clientY;
+        } else {
+          mouse.x = - event.clientX;
+          mouse.y = event.clientY;
+        }
+       
         container.removeEventListener('mousemove', onMouseMove, false);
         container.removeEventListener('mouseup', onMouseUp, false);
         container.removeEventListener('mouseout', onMouseUp, false);
