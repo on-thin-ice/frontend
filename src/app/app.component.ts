@@ -70,11 +70,11 @@ export class AppComponent implements AfterViewInit {
       
   }
 
-  private zoomIn(){
+  public zoomIn(){
     this.gl.globe_internal.zoom(100);
   }
 
-  private zoomOut(){
+  public zoomOut(){
     this.gl.globe_internal.zoom(-100);
   }
 
