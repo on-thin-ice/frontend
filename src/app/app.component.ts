@@ -15,13 +15,14 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 export class AppComponent implements AfterViewInit {
   @ViewChild('container') containerRef :ElementRef; 
   private gl:Globe;
+  private selectedTiles:number[]= [];
 
 
   public constructor(private http: HttpClient){
 
   }
   ngAfterViewInit(): void {
-      this.gl = new Globe(this.containerRef.nativeElement,{imgDir:"/assets/globe/"});
+      this.gl = new Globe(this.containerRef.nativeElement,{imgDir:"/assets/globe/",tiles:this.selectedTiles});
 
       var globe = this.gl;
       var xhr;

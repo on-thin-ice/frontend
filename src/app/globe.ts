@@ -14,7 +14,7 @@ export class Globe {
         return c;
       };
       var imgDir = opts.imgDir || 'globe/';
-
+      var selectedTiles = opts.tiles;
       var Shaders = {
         'earth': {
           uniforms: {
@@ -254,8 +254,8 @@ export class Globe {
       };
 
       function addPolys(data, opts){
-        let scale = 210.0;
-        let heightRenderingScale = 0.03;
+        let scale = 205.0;
+        let heightRenderingScale = 0.01;
         let geometry = new THREE.Geometry();
         data.vertices.forEach(element => {
           var targetScale = 1.0/Math.sqrt(element.x*element.x+element.y*element.y+element.z*element.z);
@@ -282,7 +282,7 @@ export class Globe {
             for(var idx = 0; idx < element.length; idx++){
               var face = new THREE.Face3(insertIdx, element[idx], element[(idx+1)%element.length]);
               var c = new THREE.Color();
-              c.setHSL((0.6 - (tile)*0.1%0.2), 1.0, 0.5);
+              c.setHSL((0.6 - (tile)*0.1%0.2), 0.4, 0.8);
               face.color = c;//new THREE.Color(0xff0000);
               geometry.faces.push(face);
             }
@@ -295,7 +295,7 @@ export class Globe {
 					flatShading: true,
 					vertexColors: THREE.FaceColors,
           shininess: 0,
-          opacity: 0.5,
+          opacity: 0.95,
           transparent: true,
           side: THREE.DoubleSide
 				} );
@@ -390,21 +390,6 @@ export class Globe {
           targetOnDown.y = target.y;
 
           container.style.cursor = 'move';
-          let ray = new THREE.Raycaster( );
-          var mx = (-mouseOnDown.x/ window.innerWidth ) * 2 - 1;
-          var my = (mouseOnDown.y/ window.innerHeight  ) * 2 - 1;
-          ray.setFromCamera( {x:mx,y:-my}, camera );
-          var intersects = ray.intersectObject(tilemesh);
-            
-            if (intersects.length > 0) {
-  
-                console.log("Clicked");
-                intersects[0].face.color.setRGB( 1, 0, 0 );
-                tilegeometry.colorsNeedUpdate = true;
-  
-              
-            }
-  
         } else if (event.touches.length === 2) {
           pinchActionPositions[0].x = event.touches[0].clientX;
           pinchActionPositions[0].y = event.touches[0].clientY;
@@ -428,21 +413,6 @@ export class Globe {
         targetOnDown.y = target.y;
 
         container.style.cursor = 'move';
-        let ray = new THREE.Raycaster( );
-        var mx = (-mouseOnDown.x/ window.innerWidth ) * 2 - 1;
-        var my = (mouseOnDown.y/ window.innerHeight  ) * 2 - 1;
-        ray.setFromCamera( {x:mx,y:-my}, camera );
-        var intersects = ray.intersectObject(tilemesh);
-          
-          if (intersects.length > 0) {
-
-              console.log("Clicked");
-              intersects[0].face.color.setRGB( 1, 0, 0 );
-              tilegeometry.colorsNeedUpdate = true;
-
-            
-          }
-
       }
 
       function onTouchMove(event) {
@@ -492,6 +462,8 @@ export class Globe {
       }
 
       function onMouseUp(event) {
+        mouse.x = - event.clientX;
+        mouse.y = event.clientY;
         container.removeEventListener('mousemove', onMouseMove, false);
         container.removeEventListener('mouseup', onMouseUp, false);
         container.removeEventListener('mouseout', onMouseUp, false);
@@ -499,12 +471,43 @@ export class Globe {
         container.removeEventListener('touchend', onMouseUp, false);
         container.removeEventListener('touchcancel', onMouseUp, false);
         container.style.cursor = 'auto';
+        if (Math.abs(mouseOnDown.x-mouse.x)<2&&Math.abs(mouseOnDown.y-mouse.y)<2){
+          let ray = new THREE.Raycaster( );
+          var mx = (-mouseOnDown.x/ window.innerWidth ) * 2 - 1;
+          var my = (mouseOnDown.y/ window.innerHeight  ) * 2 - 1;
+          ray.setFromCamera( {x:mx,y:-my}, camera );
+          
+          var intersects = ray.intersectObjects(scene.children);
+          if (intersects[0].object==tilemesh){
+            ray.intersectObject(tilemesh);
+            if (intersects.length > 0) {
+                var idx = intersects[0].faceIndex;
+                var startIDX = idx-idx%6;
+                for(var faceIDX = startIDX; faceIDX < startIDX+6; faceIDX++){
+                  if (!tilegeometry.faces[faceIDX].selected){
+                    tilegeometry.faces[faceIDX].color.setRGB( 1, 0, 0 );
+                    tilegeometry.faces[faceIDX].selected = true;
+                    selectedTiles.push(faceIDX);
+                  } else {
+                    tilegeometry.faces[faceIDX].color.setRGB( 1, 1, 1 );
+                    tilegeometry.faces[faceIDX].selected = false;
+                    var index = selectedTiles.indexOf(faceIDX);
+                    if (index > -1) {
+                      selectedTiles.splice(index, 1);
+                    }
+                  }
+                  
+                }
+                tilegeometry.colorsNeedUpdate = true;
+            }
+          }
+        }
       }
 
       function onMouseWheel(event) {
         event.preventDefault();
         if (overRenderer) {
-          zoom(event.wheelDeltaY * 0.3);
+          zoom((event.wheelDeltaY?event.wheelDeltaY:event.deltaY*50) * 0.5);
         }
         return false;
       }
@@ -537,7 +540,7 @@ export class Globe {
 
       function zoom(delta) {
         distanceTarget -= delta;
-        distanceTarget = distanceTarget > 2000 ? 2000 : distanceTarget;
+        distanceTarget = distanceTarget > 800 ? 800 : distanceTarget;
         distanceTarget = distanceTarget < 220 ? 220 : distanceTarget;
       }
 
