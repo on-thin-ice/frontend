@@ -63,7 +63,7 @@ html {
   #controls {
     color: #cccccc;
     position: absolute;
-    bottom: 20px;
+    bottom: 50px;
     right: 20px;
     font-weight: lighter;
     background-color: rgba(0,0,0,0.2);
