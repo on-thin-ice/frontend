@@ -385,7 +385,8 @@ export class Globe {
           let touchDetails = event.touches[0];
           mouseOnDown.x = - touchDetails.clientX;
           mouseOnDown.y = touchDetails.clientY;
-
+          mouse.x = - touchDetails.clientX;
+          mouse.y = touchDetails.clientY;
           targetOnDown.x = target.x;
           targetOnDown.y = target.y;
 
@@ -408,6 +409,8 @@ export class Globe {
 
         mouseOnDown.x = - event.clientX;
         mouseOnDown.y = event.clientY;
+        mouse.x = - event.clientX;
+        mouse.y = event.clientY;
 
         targetOnDown.x = target.x;
         targetOnDown.y = target.y;
@@ -462,15 +465,6 @@ export class Globe {
       }
 
       function onMouseUp(event) {
-        if (event.touches && event.touches.length === 1) {
-          let touchDetails = event.touches[0];
-          mouse.x = - touchDetails.clientX;
-          mouse.y = touchDetails.clientY;
-        } else {
-          mouse.x = - event.clientX;
-          mouse.y = event.clientY;
-        }
-       
         container.removeEventListener('mousemove', onMouseMove, false);
         container.removeEventListener('mouseup', onMouseUp, false);
         container.removeEventListener('mouseout', onMouseUp, false);
